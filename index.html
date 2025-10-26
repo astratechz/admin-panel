@@ -23,8 +23,22 @@
   <main class="max-w-6xl mx-auto p-6">
     <h2 class="text-xl font-semibold mb-6 border-b border-gray-700 pb-2">👥 User Payment Records</h2>
 
+    <!-- ADD USER FORM -->
+    <div class="bg-[#141414] border border-gray-800 rounded-xl shadow-lg p-4 mb-6">
+      <h3 class="text-lg font-semibold mb-3">➕ Ongeza Mtumiaji Mpya</h3>
+      <form id="add-user-form" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <input type="text" id="userName" placeholder="Jina" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="text" id="userPhone" placeholder="Namba ya Simu" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="number" id="userAmount" placeholder="Kiasi (TZS)" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="datetime-local" id="userPaidTime" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="date" id="userExpireDate" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <button type="submit" class="md:col-span-5 bg-[#E50914] hover:bg-[#f6121d] px-4 py-2 rounded text-sm font-semibold mt-2 transition-all duration-300">💾 Hifadhi Mtumiaji</button>
+      </form>
+    </div>
+
+    <!-- TABLE -->
     <div class="overflow-x-auto bg-[#141414] border border-gray-800 rounded-xl shadow-lg">
-      <table class="w-full text-left border-collapse">
+      <table class="w-full text-left border-collapse" id="userTable">
         <thead class="bg-[#1a1a1a] text-gray-300 uppercase text-sm">
           <tr>
             <th class="px-4 py-3 border-b border-gray-800">Jina</th>
@@ -32,25 +46,11 @@
             <th class="px-4 py-3 border-b border-gray-800">Kiasi (TZS)</th>
             <th class="px-4 py-3 border-b border-gray-800">Muda wa Malipo</th>
             <th class="px-4 py-3 border-b border-gray-800">Tarehe ya Kuisha</th>
+            <th class="px-4 py-3 border-b border-gray-800 text-center">Vitendo</th>
           </tr>
         </thead>
-        <tbody class="text-gray-200 text-sm">
-          <!-- You can manually add or edit user rows below -->
-          <tr class="hover:bg-[#222] transition">
-            <td class="px-4 py-3">Undefined</td>
-            <td class="px-4 py-3">+255743486843</td>
-            <td class="px-4 py-3">3,000</td>
-            <td class="px-4 py-3">2025-10-26 09:45</td>
-            <td class="px-4 py-3">2025-11-02</td>
-          </tr>
-          <tr class="hover:bg-[#222] transition">
-            <td class="px-4 py-3">Admin</td>
-            <td class="px-4 py-3">25574598818</td>
-            <td class="px-4 py-3">5,000</td>
-            <td class="px-4 py-3">2025-10-20 13:22</td>
-            <td class="px-4 py-3">2025-11-20</td>
-          </tr>
-          <!-- Add more users manually here -->
+        <tbody class="text-gray-200 text-sm" id="userTableBody">
+          <!-- Dynamic rows go here -->
         </tbody>
       </table>
     </div>
@@ -60,28 +60,18 @@
     </p>
   </main>
 
-  <!-- INFO MODAL (hidden by default) -->
+  <!-- INFO MODAL -->
   <div id="info-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
-    <!-- Overlay -->
     <div id="info-overlay" class="absolute inset-0 bg-black/70"></div>
-
-    <!-- Modal content -->
     <div class="relative max-w-lg w-full mx-4">
       <div class="bg-[#0f0f0f] border border-gray-700 rounded-2xl shadow-2xl p-6">
         <h3 class="text-lg font-bold text-[#E50914] mb-2">TAARIFA</h3>
         <p class="text-sm text-gray-200 mb-4">
-          Habari admin <strong> records hizi</strong>  ni za miamala iliyofanyika.
-          Ikiwa unataka kubadilisha au kuongeza user aliyelipia, usisite kunipa taarifa.
+          Habari admin, hizi ni rekodi za miamala iliyofanyika. Unaweza kuongeza, kuhariri, au kufuta watumiaji hapa.
         </p>
-
-        <ul class="text-xs text-gray-400 mb-4 list-disc list-inside">
-          <li>Unaweza kuhariri rekodi za watumiaji kwa mikono kwenye jedwali hapa chini.</li>
-          <li>Pop-up hii inaonyesha tu taarifa kwa admin baada ya kuingia.</li>
-        </ul>
-
         <div class="flex justify-end gap-3">
           <button id="modal-dont-show" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm">
-            Usirudie tena (kwa kivinjari hiki)
+            Usirudie tena
           </button>
           <button id="modal-close" class="px-4 py-2 bg-[#E50914] hover:bg-[#f6121d] rounded-md text-sm text-white">
             Sawa, endelea
@@ -91,58 +81,102 @@
     </div>
   </div>
 
-  <!-- ADMIN ACCESS PROTECTION SCRIPT -->
+  <!-- SCRIPT -->
   <script>
-    // Simple access protection (front-end only)
     const ADMIN_PASSWORD = "ADMIN4546";
     const infoModal = document.getElementById("info-modal");
     const modalCloseBtn = document.getElementById("modal-close");
     const modalDontShowBtn = document.getElementById("modal-dont-show");
+    const userTableBody = document.getElementById("userTableBody");
+    const addUserForm = document.getElementById("add-user-form");
 
-    // Helper to show modal
-    function showInfoModal() {
-      // Check if user previously chose "don't show again" (per-browser)
-      if (localStorage.getItem("hideAdminInfoModal") === "true") return;
-      infoModal.classList.remove("hidden");
-      infoModal.classList.add("flex");
-      // trap focus optionally could be added
+    // Load existing users from localStorage
+    function loadUsers() {
+      const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
+      userTableBody.innerHTML = "";
+      users.forEach((user, index) => addUserRow(user, index));
     }
 
-    // Helper to hide modal
-    function hideInfoModal() {
-      infoModal.classList.add("hidden");
-      infoModal.classList.remove("flex");
+    // Add user row with Edit/Delete buttons
+    function addUserRow(user, index) {
+      const row = document.createElement("tr");
+      row.className = "hover:bg-[#222] transition";
+      row.innerHTML = `
+        <td class="px-4 py-3">${user.name}</td>
+        <td class="px-4 py-3">${user.phone}</td>
+        <td class="px-4 py-3">${user.amount}</td>
+        <td class="px-4 py-3">${user.paidTime}</td>
+        <td class="px-4 py-3">${user.expireDate}</td>
+        <td class="px-4 py-3 text-center flex justify-center gap-2">
+          <button onclick="editUser(${index})" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">✏️ Hariri</button>
+          <button onclick="deleteUser(${index})" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs">🗑️ Futa</button>
+        </td>
+      `;
+      userTableBody.appendChild(row);
     }
 
-    // On modal close
-    modalCloseBtn.addEventListener("click", () => {
-      hideInfoModal();
+    // Save new user
+    addUserForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const user = {
+        name: document.getElementById("userName").value.trim(),
+        phone: document.getElementById("userPhone").value.trim(),
+        amount: document.getElementById("userAmount").value.trim(),
+        paidTime: document.getElementById("userPaidTime").value,
+        expireDate: document.getElementById("userExpireDate").value
+      };
+      const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
+      users.push(user);
+      localStorage.setItem("userRecords", JSON.stringify(users));
+      addUserForm.reset();
+      loadUsers();
+      alert("✅ Mtumiaji ameongezwa!");
     });
 
-    // On "don't show again" - store preference
-    modalDontShowBtn.addEventListener("click", () => {
-      localStorage.setItem("hideAdminInfoModal", "true");
-      hideInfoModal();
-    });
+    // Edit user
+    function editUser(index) {
+      const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
+      const user = users[index];
+      const newName = prompt("Jina jipya:", user.name);
+      const newPhone = prompt("Namba mpya ya simu:", user.phone);
+      const newAmount = prompt("Kiasi kipya (TZS):", user.amount);
+      const newPaidTime = prompt("Muda mpya wa malipo (YYYY-MM-DD HH:mm):", user.paidTime);
+      const newExpireDate = prompt("Tarehe mpya ya kuisha (YYYY-MM-DD):", user.expireDate);
 
-    // Run on load
+      if (newName && newPhone && newAmount && newPaidTime && newExpireDate) {
+        users[index] = { name: newName, phone: newPhone, amount: newAmount, paidTime: newPaidTime, expireDate: newExpireDate };
+        localStorage.setItem("userRecords", JSON.stringify(users));
+        loadUsers();
+        alert("✅ Rekodi imehaririwa kwa mafanikio!");
+      }
+    }
+
+    // Delete user
+    function deleteUser(index) {
+      const confirmDel = confirm("⚠️ Una uhakika unataka kufuta rekodi hii?");
+      if (!confirmDel) return;
+      const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
+      users.splice(index, 1);
+      localStorage.setItem("userRecords", JSON.stringify(users));
+      loadUsers();
+      alert("🗑️ Rekodi imefutwa!");
+    }
+
+    // Admin login check
     (function initAdminCheck() {
       const isAdmin = sessionStorage.getItem("isAdmin");
-
-      // If admin already authenticated in this session, do not prompt password again.
       if (!isAdmin) {
         const password = prompt("🛡️ Ingiza admin password kuendelea:");
         if (password === ADMIN_PASSWORD) {
-          // mark session and show modal notification to admin
           sessionStorage.setItem("isAdmin", "true");
-          // show the new popup/modal instead of an alert
+          loadUsers();
           showInfoModal();
         } else {
           alert("🚫 Ruhusa imekataliwa!");
           window.location.href = "/";
         }
       } else {
-        // Already admin: do nothing on page load
+        loadUsers();
       }
     })();
 
@@ -151,27 +185,23 @@
       window.location.href = "/";
     }
 
-    // Optional: close modal when clicking outside modal content
-    document.getElementById("info-overlay").addEventListener("click", () => {
+    function showInfoModal() {
+      if (localStorage.getItem("hideAdminInfoModal") === "true") return;
+      infoModal.classList.remove("hidden");
+      infoModal.classList.add("flex");
+    }
+
+    function hideInfoModal() {
+      infoModal.classList.add("hidden");
+      infoModal.classList.remove("flex");
+    }
+
+    modalCloseBtn.addEventListener("click", hideInfoModal);
+    modalDontShowBtn.addEventListener("click", () => {
+      localStorage.setItem("hideAdminInfoModal", "true");
       hideInfoModal();
     });
-
-    // Prevent accidental reveal of link hrefs (simple measure):
-    // If you have <a> tags in the table, this will remove "href" attribute display until admin explicitly edits HTML.
-    // NOTE: this is purely a front-end layer and not secure by itself.
-    document.addEventListener("DOMContentLoaded", () => {
-      // Find any links inside the table and disable default behavior (visual protection)
-      const table = document.querySelector("main table");
-      if (!table) return;
-      const links = table.querySelectorAll("a");
-      links.forEach(a => {
-        // store original href in data attribute and remove href to prevent reveal on hover/status bar
-        a.dataset.originalHref = a.href || "";
-        a.removeAttribute("href");
-        a.style.pointerEvents = "none"; // prevent clicks
-        a.title = "Link imefichwa kwenye dashboard hii";
-      });
-    });
+    document.getElementById("info-overlay").addEventListener("click", hideInfoModal);
   </script>
 
 </body>
