@@ -12,9 +12,7 @@
   <!-- HEADER -->
   <header class="bg-[#141414] border-b border-gray-800 shadow-lg p-4 flex justify-between items-center">
     <h1 class="text-2xl font-bold text-[#E50914] tracking-wide">Admin Dashboard</h1>
-    <button 
-      onclick="logoutAdmin()" 
-      class="bg-[#E50914] hover:bg-[#f6121d] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300">
+    <button onclick="logoutAdmin()" class="bg-[#E50914] hover:bg-[#f6121d] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300">
       🔒 Logout
     </button>
   </header>
@@ -49,9 +47,7 @@
             <th class="px-4 py-3 border-b border-gray-800 text-center">Vitendo</th>
           </tr>
         </thead>
-        <tbody class="text-gray-200 text-sm" id="userTableBody">
-          <!-- Dynamic rows go here -->
-        </tbody>
+        <tbody class="text-gray-200 text-sm" id="userTableBody"></tbody>
       </table>
     </div>
 
@@ -60,6 +56,24 @@
     </p>
   </main>
 
+  <!-- EDIT USER MODAL -->
+  <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70">
+    <div class="bg-[#141414] p-6 rounded-2xl border border-gray-700 shadow-2xl w-full max-w-md mx-4">
+      <h3 class="text-lg font-semibold text-[#E50914] mb-4">✏️ Hariri Taarifa za Mtumiaji</h3>
+      <form id="editForm" class="grid grid-cols-1 gap-3">
+        <input type="text" id="editName" placeholder="Jina" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="text" id="editPhone" placeholder="Namba ya Simu" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="number" id="editAmount" placeholder="Kiasi (TZS)" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="datetime-local" id="editPaidTime" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <input type="date" id="editExpireDate" required class="p-2 rounded bg-[#0f0f0f] border border-gray-700 focus:border-[#E50914] outline-none" />
+        <div class="flex justify-end gap-2 mt-4">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded">Ghairi</button>
+          <button type="submit" class="px-4 py-2 bg-[#E50914] hover:bg-[#f6121d] rounded text-white">💾 Hifadhi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- INFO MODAL -->
   <div id="info-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
     <div id="info-overlay" class="absolute inset-0 bg-black/70"></div>
@@ -67,7 +81,7 @@
       <div class="bg-[#0f0f0f] border border-gray-700 rounded-2xl shadow-2xl p-6">
         <h3 class="text-lg font-bold text-[#E50914] mb-2">TAARIFA</h3>
         <p class="text-sm text-gray-200 mb-4">
-          Habari admin, hizi ni rekodi za miamala iliyofanyika. Unaweza kuongeza, kuhariri, au kufuta watumiaji hapa.
+          Habari admin, unaweza kuongeza, kuhariri, au kufuta watumiaji. Mabadiliko yote huhifadhiwa kwenye kivinjari chako.
         </p>
         <div class="flex justify-end gap-3">
           <button id="modal-dont-show" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm">
@@ -81,41 +95,19 @@
     </div>
   </div>
 
-  <!-- SCRIPT -->
   <script>
     const ADMIN_PASSWORD = "ADMIN4546";
-    const infoModal = document.getElementById("info-modal");
-    const modalCloseBtn = document.getElementById("modal-close");
-    const modalDontShowBtn = document.getElementById("modal-dont-show");
     const userTableBody = document.getElementById("userTableBody");
     const addUserForm = document.getElementById("add-user-form");
 
-    // Load existing users from localStorage
+    // ----------- LOAD USERS ----------
     function loadUsers() {
       const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
       userTableBody.innerHTML = "";
       users.forEach((user, index) => addUserRow(user, index));
     }
 
-    // Add user row with Edit/Delete buttons
-    function addUserRow(user, index) {
-      const row = document.createElement("tr");
-      row.className = "hover:bg-[#222] transition";
-      row.innerHTML = `
-        <td class="px-4 py-3">${user.name}</td>
-        <td class="px-4 py-3">${user.phone}</td>
-        <td class="px-4 py-3">${user.amount}</td>
-        <td class="px-4 py-3">${user.paidTime}</td>
-        <td class="px-4 py-3">${user.expireDate}</td>
-        <td class="px-4 py-3 text-center flex justify-center gap-2">
-          <button onclick="editUser(${index})" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">✏️ Hariri</button>
-          <button onclick="deleteUser(${index})" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs">🗑️ Futa</button>
-        </td>
-      `;
-      userTableBody.appendChild(row);
-    }
-
-    // Save new user
+    // ----------- ADD USER ----------
     addUserForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const user = {
@@ -133,28 +125,27 @@
       alert("✅ Mtumiaji ameongezwa!");
     });
 
-    // Edit user
-    function editUser(index) {
-      const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
-      const user = users[index];
-      const newName = prompt("Jina jipya:", user.name);
-      const newPhone = prompt("Namba mpya ya simu:", user.phone);
-      const newAmount = prompt("Kiasi kipya (TZS):", user.amount);
-      const newPaidTime = prompt("Muda mpya wa malipo (YYYY-MM-DD HH:mm):", user.paidTime);
-      const newExpireDate = prompt("Tarehe mpya ya kuisha (YYYY-MM-DD):", user.expireDate);
-
-      if (newName && newPhone && newAmount && newPaidTime && newExpireDate) {
-        users[index] = { name: newName, phone: newPhone, amount: newAmount, paidTime: newPaidTime, expireDate: newExpireDate };
-        localStorage.setItem("userRecords", JSON.stringify(users));
-        loadUsers();
-        alert("✅ Rekodi imehaririwa kwa mafanikio!");
-      }
+    // ----------- ADD ROW ----------
+    function addUserRow(user, index) {
+      const row = document.createElement("tr");
+      row.className = "hover:bg-[#222] transition";
+      row.innerHTML = `
+        <td class="px-4 py-3">${user.name}</td>
+        <td class="px-4 py-3">${user.phone}</td>
+        <td class="px-4 py-3">${user.amount}</td>
+        <td class="px-4 py-3">${user.paidTime}</td>
+        <td class="px-4 py-3">${user.expireDate}</td>
+        <td class="px-4 py-3 flex justify-center gap-2">
+          <button onclick="openEditModal(${index})" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">✏️ Hariri</button>
+          <button onclick="deleteUser(${index})" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs">🗑️ Futa</button>
+        </td>
+      `;
+      userTableBody.appendChild(row);
     }
 
-    // Delete user
+    // ----------- DELETE USER ----------
     function deleteUser(index) {
-      const confirmDel = confirm("⚠️ Una uhakika unataka kufuta rekodi hii?");
-      if (!confirmDel) return;
+      if (!confirm("⚠️ Una uhakika unataka kufuta rekodi hii?")) return;
       const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
       users.splice(index, 1);
       localStorage.setItem("userRecords", JSON.stringify(users));
@@ -162,7 +153,48 @@
       alert("🗑️ Rekodi imefutwa!");
     }
 
-    // Admin login check
+    // ----------- EDIT USER (POPUP) ----------
+    const editModal = document.getElementById("editModal");
+    const editForm = document.getElementById("editForm");
+    let editingIndex = null;
+
+    function openEditModal(index) {
+      const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
+      const user = users[index];
+      editingIndex = index;
+
+      document.getElementById("editName").value = user.name;
+      document.getElementById("editPhone").value = user.phone;
+      document.getElementById("editAmount").value = user.amount;
+      document.getElementById("editPaidTime").value = user.paidTime;
+      document.getElementById("editExpireDate").value = user.expireDate;
+
+      editModal.classList.remove("hidden");
+      editModal.classList.add("flex");
+    }
+
+    function closeEditModal() {
+      editModal.classList.add("hidden");
+      editModal.classList.remove("flex");
+    }
+
+    editForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const users = JSON.parse(localStorage.getItem("userRecords") || "[]");
+      users[editingIndex] = {
+        name: document.getElementById("editName").value.trim(),
+        phone: document.getElementById("editPhone").value.trim(),
+        amount: document.getElementById("editAmount").value.trim(),
+        paidTime: document.getElementById("editPaidTime").value,
+        expireDate: document.getElementById("editExpireDate").value
+      };
+      localStorage.setItem("userRecords", JSON.stringify(users));
+      closeEditModal();
+      loadUsers();
+      alert("✅ Mabadiliko yamehifadhiwa!");
+    });
+
+    // ----------- ADMIN CHECK ----------
     (function initAdminCheck() {
       const isAdmin = sessionStorage.getItem("isAdmin");
       if (!isAdmin) {
@@ -180,10 +212,10 @@
       }
     })();
 
-    function logoutAdmin() {
-      sessionStorage.removeItem("isAdmin");
-      window.location.href = "/";
-    }
+    // ----------- INFO MODAL ----------
+    const infoModal = document.getElementById("info-modal");
+    const modalCloseBtn = document.getElementById("modal-close");
+    const modalDontShowBtn = document.getElementById("modal-dont-show");
 
     function showInfoModal() {
       if (localStorage.getItem("hideAdminInfoModal") === "true") return;
@@ -202,7 +234,12 @@
       hideInfoModal();
     });
     document.getElementById("info-overlay").addEventListener("click", hideInfoModal);
-  </script>
 
+    // ----------- LOGOUT ----------
+    function logoutAdmin() {
+      sessionStorage.removeItem("isAdmin");
+      window.location.href = "/";
+    }
+  </script>
 </body>
 </html>
