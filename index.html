@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="https://i.imgur.com/yukSStN.png" />
+</head>
+<body class="bg-gradient-to-br from-black to-gray-900 text-white min-h-screen">
+
+  <!-- HEADER -->
+  <header class="bg-[#141414] border-b border-gray-800 shadow-lg p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-[#E50914] tracking-wide">Admin Dashboard</h1>
+    <button 
+      onclick="logoutAdmin()" 
+      class="bg-[#E50914] hover:bg-[#f6121d] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300">
+      🔒 Logout
+    </button>
+  </header>
+
+  <!-- MAIN SECTION -->
+  <main class="max-w-6xl mx-auto p-6">
+    <h2 class="text-xl font-semibold mb-6 border-b border-gray-700 pb-2">👥 User Payment Records</h2>
+
+    <div class="overflow-x-auto bg-[#141414] border border-gray-800 rounded-xl shadow-lg">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-[#1a1a1a] text-gray-300 uppercase text-sm">
+          <tr>
+            <th class="px-4 py-3 border-b border-gray-800">Jina</th>
+            <th class="px-4 py-3 border-b border-gray-800">Namba ya Simu</th>
+            <th class="px-4 py-3 border-b border-gray-800">Kiasi (TZS)</th>
+            <th class="px-4 py-3 border-b border-gray-800">Muda wa Malipo</th>
+            <th class="px-4 py-3 border-b border-gray-800">Tarehe ya Kuisha</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-200 text-sm">
+          <!-- You can manually add or edit user rows below -->
+          <tr class="hover:bg-[#222] transition">
+            <td class="px-4 py-3">Undefined</td>
+            <td class="px-4 py-3">+255743486843</td>
+            <td class="px-4 py-3">3,000</td>
+            <td class="px-4 py-3">2025-10-26 09:45</td>
+            <td class="px-4 py-3">2025-11-02</td>
+          </tr>
+          <tr class="hover:bg-[#222] transition">
+            <td class="px-4 py-3">Admin</td>
+            <td class="px-4 py-3">25574598818</td>
+            <td class="px-4 py-3">5,000</td>
+            <td class="px-4 py-3">2025-10-20 13:22</td>
+            <td class="px-4 py-3">2025-11-20</td>
+          </tr>
+          <!-- Add more users manually here -->
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-xs text-gray-500 mt-6 text-center">
+      © 2025 Sky TV — Admin Only Access.
+    </p>
+  </main>
+
+  <!-- INFO MODAL (hidden by default) -->
+  <div id="info-modal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <!-- Overlay -->
+    <div id="info-overlay" class="absolute inset-0 bg-black/70"></div>
+
+    <!-- Modal content -->
+    <div class="relative max-w-lg w-full mx-4">
+      <div class="bg-[#0f0f0f] border border-gray-700 rounded-2xl shadow-2xl p-6">
+        <h3 class="text-lg font-bold text-[#E50914] mb-2">TAARIFA</h3>
+        <p class="text-sm text-gray-200 mb-4">
+          Viungo (links) hapo juu <strong>haviwezi kufichuliwa</strong> kwa sababu ya sera za usalama za dashboard.
+          Ikiwa unataka kubadilisha au kuongeza viungo, tafadhali fanya mabadiliko moja kwa moja kwenye jedwali la admin (HTML) au kwenye back-end yako.
+        </p>
+
+        <ul class="text-xs text-gray-400 mb-4 list-disc list-inside">
+          <li>Unaweza kuhariri rekodi za watumiaji kwa mikono kwenye jedwali hapa chini.</li>
+          <li>Pop-up hii inaonyesha tu taarifa kwa admin baada ya kuingia.</li>
+        </ul>
+
+        <div class="flex justify-end gap-3">
+          <button id="modal-dont-show" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm">
+            Usirudie tena (kwa kivinjari hiki)
+          </button>
+          <button id="modal-close" class="px-4 py-2 bg-[#E50914] hover:bg-[#f6121d] rounded-md text-sm text-white">
+            Sawa, endelea
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN ACCESS PROTECTION SCRIPT -->
+  <script>
+    // Simple access protection (front-end only)
+    const ADMIN_PASSWORD = "ADMIN4546";
+    const infoModal = document.getElementById("info-modal");
+    const modalCloseBtn = document.getElementById("modal-close");
+    const modalDontShowBtn = document.getElementById("modal-dont-show");
+
+    // Helper to show modal
+    function showInfoModal() {
+      // Check if user previously chose "don't show again" (per-browser)
+      if (localStorage.getItem("hideAdminInfoModal") === "true") return;
+      infoModal.classList.remove("hidden");
+      infoModal.classList.add("flex");
+      // trap focus optionally could be added
+    }
+
+    // Helper to hide modal
+    function hideInfoModal() {
+      infoModal.classList.add("hidden");
+      infoModal.classList.remove("flex");
+    }
+
+    // On modal close
+    modalCloseBtn.addEventListener("click", () => {
+      hideInfoModal();
+    });
+
+    // On "don't show again" - store preference
+    modalDontShowBtn.addEventListener("click", () => {
+      localStorage.setItem("hideAdminInfoModal", "true");
+      hideInfoModal();
+    });
+
+    // Run on load
+    (function initAdminCheck() {
+      const isAdmin = sessionStorage.getItem("isAdmin");
+
+      // If admin already authenticated in this session, do not prompt password again.
+      if (!isAdmin) {
+        const password = prompt("🛡️ Ingiza admin password kuendelea:");
+        if (password === ADMIN_PASSWORD) {
+          // mark session and show modal notification to admin
+          sessionStorage.setItem("isAdmin", "true");
+          // show the new popup/modal instead of an alert
+          showInfoModal();
+        } else {
+          alert("🚫 Ruhusa imekataliwa!");
+          window.location.href = "/";
+        }
+      } else {
+        // Already admin: do nothing on page load
+      }
+    })();
+
+    function logoutAdmin() {
+      sessionStorage.removeItem("isAdmin");
+      window.location.href = "/";
+    }
+
+    // Optional: close modal when clicking outside modal content
+    document.getElementById("info-overlay").addEventListener("click", () => {
+      hideInfoModal();
+    });
+
+    // Prevent accidental reveal of link hrefs (simple measure):
+    // If you have <a> tags in the table, this will remove "href" attribute display until admin explicitly edits HTML.
+    // NOTE: this is purely a front-end layer and not secure by itself.
+    document.addEventListener("DOMContentLoaded", () => {
+      // Find any links inside the table and disable default behavior (visual protection)
+      const table = document.querySelector("main table");
+      if (!table) return;
+      const links = table.querySelectorAll("a");
+      links.forEach(a => {
+        // store original href in data attribute and remove href to prevent reveal on hover/status bar
+        a.dataset.originalHref = a.href || "";
+        a.removeAttribute("href");
+        a.style.pointerEvents = "none"; // prevent clicks
+        a.title = "Link imefichwa kwenye dashboard hii";
+      });
+    });
+  </script>
+
+</body>
+</html>
